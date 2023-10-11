@@ -1,0 +1,227 @@
+=====================================================================
+MONGODB
+=====================================================================
+
+MongoDB ini disimpan dalam bentuk document (semi structured data)
+Di mongodb data disimpan dalam bentuk JSON
+Dalam document oriented database tidak ada relasi menggunakan FK, dan relasinya adalan embedded object di dalam document yang sama.
+
+Istilah dalam Document DB
+
+Relational		Document
+Database	=>	Database
+Table		=>	Collection
+Column		=>	Field
+Row, Record	=>	Document (JSON, XML, dll)
+Join Table	=>	Embedded Document, Reference
+SQL		=>	JavaScript
+
+DATABASE
+=====================================================================
+Biasanya 1 aplikasi akan menggunakan 1 database sehingga tidak tercampur2x
+Cara membuat database di mongodb bisa menggunakan use
+
+- use <nama database> : Digunakan untuk memilih database yang ingin digunakan
+- show databases : Digunakan untuk menampilkan semua database
+
+Kata kunci use akan beprindah database namun tidak akan terbentuk databasenya, ketika sudah memasukkan collection kedalam database tersebut maka database akan baru benar2x dibuat di MongoDB.
+
+Mothod lain
+- db.dropDatabase() : mengahpus database
+- db.getName() : menadapatkan nama databse
+- db.hostInfo() : mendapatkan info local machine
+- db.version() : mendapatkan versi mongodb
+- db.stats() : mengambil statistik dari penggunaan db
+
+COLLECTION
+=====================================================================
+Digunakan untuk menyimpan dokumen
+Maksimal ukuran 1 dokumen adalah 16MB, ini itungannya gede sih
+Ukuran nested dokumennya adalah 100 level
+
+Method yang bisa digunakan :
+- db.getCollectionNames()   : untuk mengambil semua nama collection
+- db.createCollection(name) : membuat collection baru
+- db.getCollection(name)    : mendapatkan object dari collection
+- db.<name>                 : shortcut dari getCollection
+- db.getCollectionInfos()   : mendapatkan informasi dari semua collection
+
+Method yang dapat digunakan dalam colelction
+- db.<collection>.find()        : mengambil semua document
+- db.<collection>.count()       : mengambil jumlah document yang ada
+- db.<collection>.drop()        : delete collection
+- db.<collection>.totalSize()   : mengambil ukuran collection
+- db.<collection>.stats()       : mengambil informasi collection
+
+DATA MODELING
+=====================================================================
+Ini konsepnya sangat berbeda antara relational dan document database
+dalam modeling di mongodb harus dipikirkan bagaimana aplikasi dalam melakukan query, update, dan proses data
+
+Dalam mongodb ini schemanya flexible, jadi bisa nambahin data sebebasnya tanpa harus membuat atau mendifinisikan kolom nya dulu
+Dan dalam document yang berbeda bisa memiliki field yang berbeda
+namun dalam prakteknya juga sebaiknya menggunakan jenis data yang baku dan struktur yang baku sehingga tidak akan menyulitkan nantinya
+
+dalam mongodb tiap collection wajib memiliki 1 id dengan suffix _id
+Dan juga dalam mongodb ini hanya boleh ada 1 PK tanpa adanya composite PK
+
+Ada dua struktur dalam menggunakan MongoDB
+- Structure Document Embedded:
+    Misal ada filed customers bernama gayuh dan memiliki address di dalamnya, kalo di relational biasanya dibikin table terpisah
+    Tapi di MongoDb bisa ditaruh obejctnya di document gayuh, selain itu juga bisa menyimpan array seperti data hobby
+- Structure Document References:
+    Ini bisa menggunakan style dari relational database, jadi ada field yang dibuat seolah2x merupakan foreign key, namun gabisa join nanti saat select nya
+    Jadi harus dilakukan query satu2x
+
+Sebagai acuan bisa menggunakan hal ini, ini jugaberlaku sebaliknya
+Jika dokumen ketergantungan dengan data lain maka sebaiknya dibuat embedded
+Jika dalam melakukan perubahan sebuah objetnya harus dilakukan cek data lainnya maka sebaiknya dibuat embedded
+Jika object lain selalu dibutuhkan kayak relasi one to one maka sebaiknya embedded
+
+DATA TYPE BSON (Binary JSON)
+- Double    : Data decimal
+- String    : Biasa tulisan
+- Object    : untuk embedded document
+- Array     : biasa array
+- Binarry Data  : Base64 atau BLOB
+- ObjectId  : menyimpan id
+- Boolean
+- Date
+- Null
+- Regex
+- JavaScript
+- JavaScript with Scope
+- int
+- timestamp
+- long
+- decimal
+- minKey
+- maxKey
+
+INSERT DOCUMENT
+=====================================================================
+Data yang diinsert harus dalam bentuk JSON
+ObjectId tidak wajib disebutkan, jika tidak disebutkan maka akan dilakukan generate secara random
+
+Untuk insert bisa menggunakan method:
+- db.<collection>.insertOne(document)
+- db.<collection>.insertMany(array<document>)
+
+Jika ingin memasukkan data long tidak mau integer, harus menggunakan
+new NumberLong(strAngka), jika mau int saja bisa menggunakan new NumberInt(strAngka)
+
+Comparison Query Operator
+=====================================================================
+Ini sama kayak di relational kayak where =, !=, dbs
+
+Ada beberapa operator:
+- $eq   : equals
+- $gt   : lebih dari
+- $gte  : lebih dari sama dengan
+- $lt   : kurang dari
+- $lte  : kurang dari sama dengan
+- $in   : kayak in di relational
+- $nin  : not in
+- $ne   : not equals
+
+cara penggunaannya adalah
+db.collection.find({
+    field: {operator: value}
+})
+
+Logical Query Operator
+=====================================================================
+Misal ingin menggunakan operator logika seperti di relational bisa menggunakan beberapa operator sebagai berikut
+
+- $and  : and di relational
+- $or   : atau di relational
+- $nor  : Ini mengembalikan semua kondisi jika false
+- $not  : membalikan kondisi
+
+Cara penggunaan and, or, dan nor
+db.collection.find({
+    $operator: [
+        {
+            query
+        },
+        {
+            query
+        }
+    ]
+})
+
+Cara penggunaan not
+db.collection.find({
+    field: {
+        $not: {
+            query
+        }
+    }
+})
+
+Element Operator
+=====================================================================
+Karena berbasis dokumen, kadang ada data yang ada dan engga.
+Misal di product 1 ada kategorynya, namun produk lainnya ada kategori
+
+Ada beberapa element operator:
+- $exists    : mengecek dokumen apakah memiliki fieldnya
+- $type     : Mengecek apakah field tersebut memiliki type itu
+
+contoh
+db.products.find({
+    field: {
+        $exists: false
+    }
+})
+
+db.products.find({
+    field: {
+        $type: ["int", "long"]
+    }
+})
+
+Evaluation Query Operator
+=====================================================================
+- $expr         : digunakan untuk aggregation, atau mengecek antar field dalam document yang sama
+- $jsonSchema   : validasi document sesuai dengan json schema yang telah dibuat sebelumnya, untuk json schema juga harus mengikuti ketentuan dari documentasinya
+- $mod          : melakukan opearasi modulo
+- $regex        : mengambil dokumen dengan regexnya, ini seperti like query
+- $text         : pencarian menggunakan text
+- $where        : mengambil document dengan js function
+
+Array Quey Operator
+=====================================================================
+Ada beberapa operator khusus untuk array
+- $all          : mencocokan array yang mengandung elemen2x, ini ga kaya in karena harus ada semua
+- $elemMatch    : mengambil document jika element di array memenuhi kondisi, nah kalo in kayak in
+- $size         : mengambil dokumen jika ukurannya sesuai
+
+Projection
+=====================================================================
+Seletelah method find, parameter kedua bisa diisikan projection untuk memilih kolom mana yang ingin diambil saja
+namun pada mongodb ini, id akan selalu di select
+untuk mengamilnya bisa menggunakan cara namaField: 1 || 0. 1 untuk ditampilkan, 0 tidak ditampilkan
+
+Projection Operator
+- $             : untuk limit array data pertama
+- $elemMatch    : limit array hanya data pertama yang match
+- $meta         : ini nanti di text index
+- $slice        : mengontrol jumlah data array yang ingin dikembalikan
+
+Query Modifier
+=====================================================================
+Melakukan limit, sorting, maupun offset
+
+hal ini bisa dilakukan dengan chaining method sebagai berikut ;
+- count()       : mengambil jumlah datanya
+- limit(size)   : membatasi jumlah data
+- skip(size)    : melakukan offset atau skip n data pertama
+- sort(query)   : mengurutkan hasil dari query. 1 => ascending, -1 => descending
+
+
+
+
+
+
+
