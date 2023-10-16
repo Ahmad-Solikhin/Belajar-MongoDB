@@ -219,6 +219,48 @@ hal ini bisa dilakukan dengan chaining method sebagai berikut ;
 - skip(size)    : melakukan offset atau skip n data pertama
 - sort(query)   : mengurutkan hasil dari query. 1 => ascending, -1 => descending
 
+Update Document
+=====================================================================
+Bisa melakukan update document dengan beberapa function berikut:
+- updateOne()   : mengubah 1 dokumen
+- updateMany()  : mengubah banyak dkumen sekaligus
+- replaceOne()  : mengubah total satu dokumen dengan dokumen baru
+
+Syntaxnya adalah
+db.collection.methodUpdate(
+    {}, //Filter
+    {}, //Update
+    {}, //Options
+)
+
+Field Update Operator
+=====================================================================
+- $set          : mengubah ilai field
+- $unset        : hapus field dokumen
+- $inc          : menaikan nilai number di field, bisa dikasih value minus jika ingin mengurangi
+- $rename       : mengubah nama field
+- $currentDate  : mengubah field menjadi waktu saat ini
+
+Array Update Operator
+=====================================================================
+- $                 : mengupdate data array pertama
+- $[]               : mengupdate semua data array
+- $[<identifier>]   : update semua data array sesuai kondisi filter
+- <index>           : mengupdate data array sesuai dengan nomor index
+- $addToset         : menambahkan value ke array jika belum ada
+- $pop              : menghapus element pertama -1 atau terakhir 1
+- $pull             : hapus semua element array yang sesuai kondisi
+- $push             : menambahkan element ke array
+- $pullAll          : menghapus semua element di array
+- $each             : digunakan untuk addToSet dan push untuk menambahkan multiple element
+- $position         : digunakan di push untuk mengubah posisi data
+- $slice            : digunakan di push untuk menentukan jumlah maksimal array
+- $sort             : urutlan data array setelah push
+
+Delete Dokumen
+=====================================================================
+- db.collection.deleteOne(query)    : menghapus 1 dokumen sesuai kondisi query
+- db.collection.deleteMany(query)   : menghapus banyak dokumen sesuai query
 
 
 

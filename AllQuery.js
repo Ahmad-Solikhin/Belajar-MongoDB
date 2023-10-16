@@ -321,4 +321,278 @@ db.products.find({}).limit(4).skip(2)
 db.products.find({}).sort({name: -1, category: 1})
 db.products.find({}).sort({category: 1})
 
+//Update
+db.products.updateOne(
+    {_id: 1},
+    {
+        $set: {
+            category: "food"
+        }
+    }
+)
 
+db.products.updateOne(
+    {_id: 2},
+    {
+        $set: {
+            category: "food"
+        }
+    }
+)
+
+db.products.updateMany({
+    $and: [
+        {
+            category: {
+                $eq: "food"
+            }
+        },
+        {
+            tags: {
+                $exists: false
+            }
+        }
+    ]
+},
+{
+    $set: {
+        tags: ["food"]
+    }
+})
+
+db.products.insertOne({
+    _id: 9,
+    name: "Salah",
+    wrong: "Salah"
+})
+
+db.products.replaceOne({
+    _id: 9
+},{
+    name: "Sepatu Nike",
+    price: 1100000,
+    category: "shoes",
+    tags: [
+        'nike', 'shoes', 'running'
+    ]
+})
+
+db.products.updateMany(
+    {},
+    {$set: {
+        stock: 0
+    }}
+)
+
+db.products.updateMany({},
+    {
+        $inc: {
+            stock: 10
+        }
+    }
+)
+
+db.customers.updateMany({},
+    {
+        $rename: {
+            name: "full_name"
+        }
+    }
+)
+
+db.customers.updateMany({}, {
+    $set: {
+        wrong: "Salah"
+    }
+})
+
+db.customers.updateMany({}, {
+    $unset: {
+        wrong: ""
+    }
+})
+
+db.products.updateMany({},
+    {
+        $currentDate: {
+            lastModifiedDate: {
+                $type: "date"
+            }
+        }
+    }
+)
+
+db.products.find()
+
+//Array Update
+db.products.updateMany({},{
+    $set: {
+        ratings: [90, 80, 70]
+    }
+})
+
+db.products.updateMany({
+    ratings: 90
+}, {
+    $set: {
+        'ratings.$': 100
+    }
+})
+
+db.products.updateMany({}, {
+    $set: {
+        'ratings.$[]': 100
+    }
+})
+
+db.products.updateMany({},
+    {
+        $set: {
+            'ratings.$[great]': 100
+        }
+    },
+    {
+        arrayFilters: [
+            {
+                great: {
+                    $gte: 80
+                }
+            }
+        ]
+    }
+)
+
+db.products.updateMany({},
+    {
+        $set: {
+            'ratings.0': 50,
+            'ratings.1': 60
+        }
+    }
+)
+
+db.products.updateOne(
+    {
+        _id: 1
+    },
+    {
+        $addToSet: {
+            tags: "popular"
+        }
+    }
+)
+
+db.products.updateOne(
+    {
+        _id: 1
+    },
+    {
+        $pop: {
+            ratings: -1 //Depan
+        }
+    }
+)
+
+db.products.updateOne(
+    {
+        _id: 2
+    },
+    {
+        $pop: {
+            ratings: 1 //Belakang
+        }
+    }
+)
+
+db.products.updateMany(
+    {},
+    {
+        $pull: {
+            ratings: {
+                $gte: 80
+            }
+        }
+    }
+)
+
+db.products.updateMany({},
+    {
+        $push: {
+            ratings: 0
+        }
+    }
+)
+
+db.products.updateMany({},
+    {
+        $pullAll: {
+            ratings: [100, 0]
+        }
+    }
+)
+
+db.products.updateMany({}, {
+    $push: { //Bisa buat addToSetJuga
+        ratings: {
+            $ech: [100, 200, 300]
+        }
+    }
+})
+
+db.products.updateMany({}, {
+    $push: {
+        tags: {
+            $each: ['hot'],
+            $position: 1
+        }
+    }
+})
+
+db.products.updateMany({}, {
+    $push: {
+        ratings: {
+            $each: [100, 200, 300, 400, 500],
+            $sort: -1
+        }
+    }
+})
+
+db.products.updateMany({}, {
+    $push: {
+        ratings: {
+            $each: [100, 200, 300, 400, 500],
+            $slice: 2,
+            $sort: -1
+        }
+    }
+})
+
+db.customers.insertOne({
+    _id: "Spammer",
+    name: "Spammer"
+})
+
+db.customers.find()
+
+db.customers.deleteOne({
+    _id: "Spammer"
+})
+
+db.customers.insertMany([
+    {
+        _id: "spammer 1",
+        full_name: "Spammer"
+    }, {
+        _id: "spammer 2",
+        full_name: "Spammer"
+    }, {
+        _id: "spammer 3",
+        full_name: "Spammer"
+    }
+])
+
+db.customers.deleteMany({
+    _id: {
+        $regex: "spammer"
+    }
+})
