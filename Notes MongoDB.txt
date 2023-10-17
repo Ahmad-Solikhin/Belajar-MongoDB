@@ -262,8 +262,166 @@ Delete Dokumen
 - db.collection.deleteOne(query)    : menghapus 1 dokumen sesuai kondisi query
 - db.collection.deleteMany(query)   : menghapus banyak dokumen sesuai query
 
+Bulk Operation
+=====================================================================
+Ini adalah sebuah solusi jika ingin melakukan insert, update, atau delete data dalam jumlah yang banyak
+
+Method yang dapat digunakan:
+- db.collection.insertMany()        : insert dokumen secara banyak sekaligus
+- db.collection.updateMany()        : update banyak dokumen sekaligus
+- db.collection.deleteMany()        : delete banyak dokumen sekaligus
+- db.collection.bulkWrite()         : melakukan operasi write (insert, update, atau delete) banyak secara sekaligus
+
+Isi dari bulkWrite adalah array dimana masing2x isinya adalah:
+- insertOne
+- insertMany
+- updateOne
+- updateMany
+- deleteOne
+- deletemany
+
+Indexes
+=====================================================================
+Ini adalah cara untuk melakukan query dengan lebih efisien
+Jika tidak dilakukan indexing, maka akan dilakukan collection scan
+Index yang digunakan pada mongodb aalah BTREE seperti pada relational database pada biasanya
+
+function yang digunakan untuk manipulasi index
+- db.collection.createIndex()       : membuat index di collection
+- db.collection.getIndexes()        : melihat semua index di collection
+- db.collection.dropIndex()         : menghapus index di collection
+
+Secara default sama kek di relational database, id atau primary key adalah index
+
+saat membuat index bisa menggunakan 1 untuk ascending dan -1 untuk descending untuk mengurutkannya
+
+Compound Indexes
+=====================================================================
+Jika butuh melakukan query lebih dari 1 field, bisa digunakan index terhadap lebih dari 1 field
+Hal ini disebut sebagai compound index
+Mongodb melakukan pembatasan maksimal field yang dibuat di compound index adalah 32 field
+Cara membuatnya juga sama kayak seperti biasa
+
+Sama kayak relational, kombinasi dari index adalah sebagai berikut
+misal buat index(a,b,c) maka pencarian yang akan kena index adalah query a, ab, abc
+
+Text Index
+=====================================================================
+Digunakan untuk pencarian text di tipe data string
+Selain string ini juga bisa digunakan array string
+Ini akan cepat jika melakukan pencarian menggunakan $regex
+Tapi ini tidak secepat search engine, oleh karena itu jika banyak kombinasi text lebih baik gunakan search engine
+
+Saat ingin membuat text index, bukan lagi menggunakan 1 atau -1, tapi menuliskan text
+Lalu diberikan weights atau bobotnya, semakin besar bobotnya maka prioritasnya akan semakin besar
+
+untuk melakukan pencarian di text index bisa menggunakan operator $text
+text index ini bersifat insensitive
+
+jika misal ingin mencari kedua kata dengan operator or, contohnya "mie lapto" maka akan mencari mie atau laptop
+Jika mencari harus keduanya bisa '"mie sedaap"'
+Jika ingin mencari kata pertama yang tidak mengandung kata kedua bisa menggunakan "mie -sedaap": tanda - sebagai penanda agar tidak dicari
 
 
+Meta Operator
+=====================================================================
+$meta bisa digunakan untuk mendapatkan text score
+Hal ini sangat bermanfaat untuk membantu proses debugging
 
 
+Wildcard index
+=====================================================================
+Ini bisa digunakan pada field yang bisa berubah2x
+Misal ada embedded dokumen dengan custom fields
+Dengan menggunakan wildcard ini bisa mempercepat query ke custom field tersebut
 
+caranya adalah dengan menambahkan .$** pada field yang ingin dibuat wildcard
+Jangan terlalu banyak membuat wildcard, karena jika fieldnya semakin besar maka insert, update, dan deletenya akan semakin lama
+
+Index Properties
+=====================================================================
+Menambahkan kemampuan tertentu pada index yang dibuat
+TTL : Time To Live, ini adalah waktu untuk waktu hidup dari dokumen, jika waktunya sudah habisa maka datanya akan hilang
+TTL dapat digunakan hanya pada field dengan tipe data date
+namun cron pada mongodb ini berjalan setiap 60 detik sekali
+Jadi waktu expired yang digunakan ini menghitung dari field date + waktu yang ditentukan
+Bukan dari kapan data tersebut di insert
+
+Unique Index
+=====================================================================
+Sama kayak di database relational ini agar datanya tidak boleh duplikat
+Jika tidak semua data memiliki field yang unique maka secara default maka akan terjadi error
+Jika hanya ingin menerapkan unique pada data yang memiliki field tersebut bisa menambahkan sparse: true
+
+Case Insensitive
+=====================================================================
+Defaultnya data akan disimpan case sensitive
+Jika ingin datanya menjadi insensitive bisa menggunakan index dengan nilai collation strength = 2
+
+Dan untuk melakukan select pada index ini tidak bisa menggunakan cara biasa, harus menambahkan collationnya
+
+Partial
+=====================================================================
+Ada cara kondisi tertentu untuk menggunakan index jika kondisi tertentu terpenuhi
+
+Security
+=====================================================================
+Secara default di mongodb tidak ada authentication samsek
+Agar aman bisa dilakukan pengaktifkan fitur security
+Pertama harus dibuat user adminnya, admin memiliki role userAdminAnyDatabase dan readWriteAnyDatabase
+Dan ketika sudah dibuat nanti jalanin mongodb tambahin --auth
+Data user base practice nya disimpan dalam database admin
+
+User Management
+=====================================================================
+Kita bisa membuat user lagi dan memberikan role terhadap user tersebut, best practicenya user disimpan dalam database admin
+User juga bersifat unique
+Function2x yang dapat digunakan:
+- db.cerateUser()       : membuat user
+- db.getUsers()         : melihat semua user
+- db.dropUser()         : menghapus user
+- db.updateuser()       : update user
+- db.changeUserPassword() : mengubah user password
+
+Authorization
+Ini adalah hal yang dilakukan jika authenticationnya sudah sukses, authorization ini untuk mengecek hak akses atau role
+
+Database roles bawaan mongodb adalah:
+- read      : membaca data di semua collection yang bukan sistem collection
+- readWrite : membaca dan write data di semua collection yang bukan sistem collection
+- dbAdmin   : admin database
+- userAdmin : membuat user dan role
+- dbOwner   : kombinasi semuanya
+- readAnyDatabase   : seperti read tapi untuk semua database
+- readWriteAnyDatabase  : seperti readWrite tapi untuk semua db
+- userAdminAnyDatabase  : seperti userAdmin, tapi untuk semua database
+- dbAdminAnyDatabase    : seperti dbAdmin, tapi untuk semua database
+- backup    : untuk melakukan backup
+- restore   : untuk restore database
+- root      : bisa melakukan semuanya
+
+Role
+=====================================================================
+Jika ingin membuat role sendiri yang lebih customize, seperti membatasi role pada level collection
+Karena pada dasarnya role built in dari mongodb hanya pada level database
+untuk melakukan hal ini harus menggunakan fitur previllage
+
+function2x yang bisa digunakan
+- db.createRole()
+- db.getRoles()
+- db.deleteRole()
+- db.updateRole()
+
+Backup
+=====================================================================
+Mongodb tidak memiliki tools bawaan untuk melakukan backup dan restore
+Ada tools bernama mongodb tools untuk melakukan backup dan restore
+Ada dua aplikasi yang bisa digunakan dalam melakukan backup
+- mongodump     : backup dalam format binary, ini akan lebih cepat ketika datanya berisi binary atau ukurannya besar
+- mongoexport   : backup dalam format json/csv, cocok jika datanya tidak terlalu besar dan hanya berisi text. Namun cuma bisa per collection
+
+Restore
+=====================================================================
+Untuk melakukan restore bisa menggunakan aplikasi berdasarkan backupnya
+- mongorestore  : untu mongodump
+- mongoimport   : untuk mongoexport

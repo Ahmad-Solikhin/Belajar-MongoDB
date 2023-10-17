@@ -596,3 +596,351 @@ db.customers.deleteMany({
         $regex: "spammer"
     }
 })
+
+db.customers.bulkWrite([
+    {
+        insertOne: {
+            document: {
+                _id: "Ahmad",
+                full_name: "Ahmad Gayuh"
+            }
+        }
+    },
+    {
+        insertOne: {
+            document: {
+                _id: "Raharjo",
+                full_name: "Gayuh Raharjo"
+            }
+        }
+    },
+    {
+        updateMany: {
+            filter: {
+                _id: {
+                    $in: ['Ahmad', 'Raharjo']
+                }
+            },
+            update: {
+                $set: {
+                    full_name: 'Solikhin Gayuh Raharjo'
+                }
+            }
+        }
+    }
+])
+
+//Index
+
+db.customers.getIndexes();
+
+db.products.createIndex({
+    category: 1
+})
+
+db.products.dropIndex("category_1")
+
+db.products.find({
+    category: "food"
+})
+
+db.products.find({
+    category: "food"
+}).explain()
+
+db.products.find({
+    category: "food"
+}).sort({
+    category: 1
+}).explain()
+
+db.products.find({
+    tags: "samsung"
+}).explain()
+
+//Compound Index
+db.products.createIndex({
+    stock: 1,
+    tags: 1
+})
+
+db.products.find({
+    stock: 10,
+    tags: "popular"
+}).explain()
+
+db.products.find({
+    stock: 10
+}).explain()
+
+//Text index
+db.products.createIndex({
+    name: "text",
+    category: "text",
+    tags: "text"
+},{
+    weights: {
+        name: 10,
+        category: 5,
+        tags: 1
+    }
+})
+
+db.products.find({
+    $text: {
+        $search: "mie"
+    }
+})
+
+db.products.find({
+    $text: {
+        $search: "mie laptop"
+    }
+})
+
+db.products.find({
+    $text: {
+        $search: '"mie sedaap"'
+    }
+})
+
+db.products.find({
+    $text: {
+        $search: "mie -sedaap"
+    }
+})
+
+db.products.find({
+    $text: {
+        $search: "mie laptop"
+    }
+},{
+    searchScore: {
+        $meta: "textScore"
+    }
+})
+
+//Wildcard Index
+db.customers.createIndex({
+    "customFields.$**": 1
+})
+
+db.customers.insertMany([
+    {
+        _id: "Budi",
+        full_name: "Budi",
+        customFields: {
+            hobby: "Gaming",
+            university: "Random"
+        }
+    },{
+        _id: "Rudi",
+        full_name: "Rudi",
+        customFields: {
+            ipk: 3.3,
+            university: "Random"
+        }
+    },{
+        _id: "Anton",
+        full_name: "Anton",
+        customFields: {
+            motherName: "Dina",
+            passion: "Turu"
+        }
+    }
+])
+
+db.customers.find({
+    "customFields.passion": "Turu"
+})
+
+db.customers.find({
+    "customFields.university": "Random"
+})
+
+//Properties Index
+db.createCollection("sessions")
+
+db.sessions.createIndex({
+    createdAt: 1
+}, {
+    expireAfterSeconds: 10
+})
+
+db.sessions.insertOne({
+    _id: 1,
+    session: 1,
+    createdAt: new Date()
+})
+
+//Unique Index
+db.customers.createIndex({
+    email: 1
+}, {
+    unique: true,
+    sparse: true
+})
+
+db.customers.updateOne({
+    _id: "Gayuh"
+}, {
+    $set: {
+        email: "ahmadsgr39@gmail.com"
+    }
+})
+
+db.customers.updateOne({
+    _id: "Ahmad"
+}, {
+    $set: {
+        email: "ahmadsgr39@gmail.com"
+    }
+})
+
+//Collation index case insensitive
+db.customers.createIndex({
+    full_name: 1
+}, {
+    collation: {
+        locale: "en",
+        strength: 2
+    }
+})
+
+db.customers.find({
+    full_name: "Solikhin Gayuh raharjo"
+})
+
+db.customers.find({
+    full_name: "Solikhin Gayuh raharjo"
+}).collation({
+    locale: "en",
+    strength: 2
+})
+
+//Patial Index
+db.products.createIndex({
+    price: 1
+}, {
+    partialFilterExpression: {
+        stock: {
+            $gt: 0
+        }
+    }
+})
+
+db.products.find({
+    price: 2000
+})
+
+db.products.find({
+    price: 2000,
+    stock: {
+        $gt: 0
+    }
+})
+
+//Security
+db.createUser({
+    user: "mongo",
+    pwd: "root",
+    roles: [
+        "userAdminAnyDatabase",
+        "readWriteAnyDatabase"
+    ]
+})
+
+db.createUser({
+    user: "contoh",
+    pwd: "contoh",
+    roles: [
+        {
+            role: "read",
+            db: "test"
+        }
+    ]
+})
+
+db.createUser({
+    user: "contoh2",
+    pwd: "contoh2",
+    roles: [
+        {
+            role: "readWrite",
+            db: "test"
+        }
+    ]
+})
+
+db.sample.insertOne({
+    _id: 1,
+    name: "Gayuh"
+})
+
+db.changeUserPassword("contoh", "rahasia")
+
+db.dropUser("contoh")
+
+db.updateUser("contoh2", {
+    roles: [
+        {
+            role: "readWrite",
+            db: "test"
+        },
+        {
+            role: "readWrite",
+            db: "belajar"
+        }
+    ]
+})
+
+//Role
+db.createRole({
+    role: "session_management",
+    roles: [
+        {
+            role: "read",
+            db: "belajar"
+        }
+    ],
+    privileges: [
+        {
+            resource: {
+                db: "belajar",
+                collection: "sessions"
+            },
+            actions: ["insert"]
+        }
+    ]
+})
+
+db.getRoles({
+    showPrivileges: true
+})
+
+db.createUser({
+    user: "gayuh",
+    pwd: "gayuh",
+    roles: ["session_management"]
+})
+
+db.customers.insertOne({
+    _id: "contoh",
+    full_name: "Contoh"
+})
+
+db.sessions.insertOne({
+    _id: "test",
+    name: "test"
+})
+
+
+//Backup
+\bin\mongodump --uri="mongodb://mongo:root@localhost:27017/belajar?authSource=admin" --out=backup-dump
+
+\bin\mongoexport --uri="mongodb://mongo:root@localhost:27017/belajar?authSource=admin" --collection="customers" --out=belajar=customers.json
+
+//Restore
+\bin\mongorestore --uri="mongodb://mongo:root@localhost:27017/belajar_restore?authSource=admin" --dir=backup-dump\belajar
+
+\bin\mongoimport --uri="mongodb://mongo:root@localhost:27017/belajar_import?authSource=admin" --collection="customers" --file=belajar-customers.json
